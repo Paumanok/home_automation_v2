@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"net/http"
+	"html/template"
 	"datapaddock.lan/go_server/internal/utils/helpers"
 )
 //empty structs take up no space but enable it
@@ -21,14 +22,17 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	//here we're going to define our basic api endpoints
 	// i'm going to supply endpoints for the old server for now until I refactor
 	// the esp code
+	fmt.Println(head)
 	switch head {
-	case "/":
+	case "":
+		fmt.Println("hit index case")
+		index(res, req)
 		//index/homepage
 	case "images":
 		//return jpeg of plot
 	case "next":
 		//get next measurement delay
-	case "config":
+case "config":
 		//configuration page
 	case "measurements":
 		//root of measurements queries
@@ -38,6 +42,7 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	case "data":
 		//device data POST endpoint
 	default:
+		fmt.Println("hit default")
 
 	}
 }
@@ -56,3 +61,16 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 	}
 }
 
+func index(res http.ResponseWriter, req *http.Request){
+	fmt.Println("index called")
+	t := template.New("internal/server/web/templates/index.html")
+
+	t, err := t.ParseFiles("internal/server/web/templates/index.html",)
+	if err != nil {
+		fmt.Println("error?")
+		fmt.Println(err)
+		return
+	}
+
+	t.Execute(res, nil)
+}
