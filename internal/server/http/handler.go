@@ -5,12 +5,15 @@ import (
 	"net/http"
 	"html/template"
 	"datapaddock.lan/go_server/internal/utils/helpers"
+	"path/filepath"
+
 )
 //empty structs take up no space but enable it
 //to be used as a "method receiver"
 // I think the empty struct inside of it might also make this zero bytes but idk
 type BaseHandler struct {
 	MeasurementHandler *MeasurementHandler
+	IndexHandler *IndexHandler
 }	
 						
 
@@ -26,7 +29,7 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	switch head {
 	case "":
 		fmt.Println("hit index case")
-		index(res, req)
+		h.IndexHandler.ServeHTTP(res, req)
 		//index/homepage
 	case "images":
 		//return jpeg of plot
@@ -61,16 +64,30 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 	}
 }
 
-func index(res http.ResponseWriter, req *http.Request){
-	fmt.Println("index called")
-	t := template.New("internal/server/web/templates/index.html")
+type IndexHandler struct {}
 
-	t, err := t.ParseFiles("internal/server/web/templates/index.html",)
+func (h *IndexHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
+	fmt.Println("index called")
+
+	template_path, err := filepath.Abs("internal/server/http/web/templates/")
 	if err != nil {
-		fmt.Println("error?")
+		fmt.Println(err)
+		return
+	}
+	index_path := template_path + "/" + "index.html"
+	
+	t := template.New(index_path)
+
+	t, err = t.ParseFiles(index_path)
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	t.Execute(res, nil)
+	data := struct {
+		Name string
+	}{"myname"}
+
+	t.ExecuteTemplate(res,"index.html", data)
+	return 
 }
