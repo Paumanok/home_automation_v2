@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  postgres:
+    image: "postgres:latest"
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password 
+      POSTGRES_USER: user
+      POSTGRES_DB: HomeAuto
+    ports:
+      - '5438:5432'
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./schemas:/docker-entrypoint-initdb.d/devices.sql
+      - ./schemas:/docker-entrypoint-initdb.d/measurements.sql
+
+  goapp:
+    build:
+      context: .
+      dockerfile: ./dev.dockerfile
+    volumes:
+      - ./:/app
