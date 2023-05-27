@@ -29,9 +29,18 @@ func main() {
 		fmt.Println("deviceStore failed")
 	}
 	
+	if deviceStore == nil {
+		fmt.Println("placeholder")
+	}
+	
 	measurementStore, err := measurements.NewStore(pool)
 	if err != nil {
 		fmt.Println("measurementStore failed")
+	}
+
+	measurementService, err := measurements.NewService(measurementStore)
+	if err != nil {
+		fmt.Println("measurementService failed")
 	}
 
 	httpCfg, err := cfg.HTTP()
@@ -40,7 +49,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	http_server, err := http.NewService(httpCfg)
+	http_server, err := http.NewService(httpCfg, measurementService)
 	if err != nil {
 		fmt.Println("http server start failed")
 		os.Exit(0)

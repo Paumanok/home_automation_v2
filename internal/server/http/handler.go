@@ -3,9 +3,12 @@ package http
 import (
 	"fmt"
 	"net/http"
+	"encoding/json"
 	"html/template"
 	"datapaddock.lan/go_server/internal/utils/helpers"
 	"path/filepath"
+	"datapaddock.lan/go_server/internal/measurements"
+	//"datapaddock.lan/go_server/internal/devices"
 
 )
 //empty structs take up no space but enable it
@@ -46,11 +49,12 @@ case "config":
 		//device data POST endpoint
 	default:
 		fmt.Println("hit default")
-
 	}
 }
 
-type MeasurementHandler struct {}
+type MeasurementHandler struct {
+	m *measurements.Measurements
+}
 
 func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
 	var head string
@@ -59,6 +63,15 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 	switch req.Method {
 	case "POST":
 		//getting data from esp
+		measurement := new(measurements.Measurement)
+		err := json.NewDecoder(req.Body).Decode(measurement)
+		if err != nil {
+			fmt.Println("json decode failed")
+			return
+		}
+		fmt.Println("handler creating measurement")
+		h.m.CreateMeasurement(req.Context(), measurement)
+		return
 	case "GET":
 		//getting data from db
 	}
