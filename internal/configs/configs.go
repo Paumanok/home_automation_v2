@@ -12,7 +12,7 @@ type Configs struct {
 
 func (cfg *Configs) HTTP() (*http.Config, error) {
 	return &http.Config{
-		Host: "localhost",
+		Host: "0.0.0.0",
 		Port: "8080",
 		ReadTimeout: 5 * time.Second,
 		WriteTimeout: 5 * time.Second,

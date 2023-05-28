@@ -36,10 +36,12 @@ func NewService(cfg *Config, m *measurements.Measurements) (*HTTP, error) {
 	//	return nil, err
 	//}
 	
+	measurement_handler := &MeasurementHandler{
+		service: m,
+	}
+
 	baseHandler := &BaseHandler{
-		MeasurementHandler: &MeasurementHandler{
-			m : m,
-		},
+		MeasurementHandler: measurement_handler,
 		IndexHandler: new(IndexHandler),
 	}
 

@@ -19,5 +19,15 @@ services:
     build:
       context: .
       dockerfile: ./dev.dockerfile
+    ports:
+      - 8080:8080
     volumes:
       - ./:/app
+
+    networks:
+      - local
+
+  
+networks:
+  local:
+    driver: bridge

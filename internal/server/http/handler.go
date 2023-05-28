@@ -53,7 +53,7 @@ case "config":
 }
 
 type MeasurementHandler struct {
-	m *measurements.Measurements
+	service *measurements.Measurements
 }
 
 func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
@@ -70,7 +70,7 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 			return
 		}
 		fmt.Println("handler creating measurement")
-		h.m.CreateMeasurement(req.Context(), measurement)
+		h.service.CreateMeasurement(req.Context(), measurement)
 		return
 	case "GET":
 		//getting data from db
