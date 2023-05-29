@@ -17,7 +17,6 @@ type deviceStore struct {
 }
 
 
-
 func (ds *deviceStore) Create(ctx context.Context, d *Device) error {
 	query, args, err := ds.sq.Insert(ds.tableName).SetMap(map[string]interface{}{
 		"nickname": d.Nickname,
@@ -41,9 +40,52 @@ func (ds *deviceStore) Create(ctx context.Context, d *Device) error {
 	return nil
 }
 
+func (ds *deviceStore) GetdeviceByMac(ctx context.Context, mac string) (*Device, error){
+	query, args, err := ds.sq.Select(
+		"nickname",
+		"mac",
+		"humiditycomp",
+		"temperaturecomp",
+	).From(
+		ds.tableName,
+		).Where(
+			squirrel.Eq{
+				"mac" : mac, //i should worry about cap vs lowercase somewhere
+			},
+		).ToSql()
+
+		if err != nil {
+			return nil, err
+		}
+
+		row := ds.pdqdriver.QueryRow(ctx, query, args...)
+		
+		if err != nil {
+			return nil, err
+		}
+
+		var dev Device
+		
+		err = row.Scan(
+			&dev.Nickname,
+			&dev.MAC, 
+			&dev.HumidityComp,
+			&dev.TemperatureComp,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return &dev, nil
+
+}
 
 func (ds *deviceStore) GetDevices(ctx context.Context) ([]Device, error) {
-	query, args, err := ds.sq.Select("*").From(ds.tableName).ToSql()
+	query, args, err := ds.sq.Select(
+		"nickname",
+		"mac",
+		"humiditycomp",
+		"temperaturecomp",
+		).From(ds.tableName).ToSql()
 
 	if err != nil {
 		fmt.Println(err)

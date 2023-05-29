@@ -8,7 +8,7 @@ import (
 	"datapaddock.lan/go_server/internal/utils/helpers"
 	"path/filepath"
 	"datapaddock.lan/go_server/internal/measurements"
-	//"datapaddock.lan/go_server/internal/devices"
+	"datapaddock.lan/go_server/internal/devices"
 
 )
 //empty structs take up no space but enable it
@@ -16,6 +16,7 @@ import (
 // I think the empty struct inside of it might also make this zero bytes but idk
 type BaseHandler struct {
 	MeasurementHandler *MeasurementHandler
+	DeviceHandler *DeviceHandler
 	IndexHandler *IndexHandler
 }	
 						
@@ -47,8 +48,34 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		h.MeasurementHandler.ServeHTTP(res, req)
 	case "data":
 		//device data POST endpoint
+		h.ServeData(res, req)
 	default:
 		fmt.Println("hit default")
+	}
+}
+
+
+func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
+	
+	switch req.Method {
+	case "POST":
+		measurement := new(measurements.Measurement)
+		err := json.NewDecoder(req.Body).Decode(measurement)
+		if err != nil {
+			fmt.Println("json decode failed")
+			return
+		}
+		exists, err := h.DeviceHandler.service.GetDeviceExists(req.Context(), measurement.MAC)
+		if err != nil {
+			fmt.Println("error checking for device existance")
+		}
+		
+		if exists {
+			fmt.Println("device exists!")
+		}
+
+	case "GET":
+		//not sure if we need something here
 	}
 }
 
@@ -86,6 +113,10 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		res.WriteHeader(http.StatusOK)
 		json.NewEncoder(res).Encode(meas)
 	}
+}
+
+type DeviceHandler struct {
+	service *devices.Devices
 }
 
 type IndexHandler struct {}

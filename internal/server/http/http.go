@@ -6,7 +6,7 @@ import (
 
 	"time"
 	"datapaddock.lan/go_server/internal/measurements"
-	//"datapaddock.lan/go_server/internal/devices"
+	"datapaddock.lan/go_server/internal/devices"
 )
 
 type HTTP struct {
@@ -27,12 +27,12 @@ func (h *HTTP) Start() error {
 
 
 
-func NewService(cfg *Config, m *measurements.Measurements) (*HTTP, error) {
+func NewService(cfg *Config, m *measurements.Measurements, d *devices.Devices) (*HTTP, error) {
 	fmt.Println("Hello World from http service")
 	//t := template.New("web/templates/index.html")
 
 	//home, err := t.ParseFiles("web/templates/index.html",)
-	//if err != nil {
+	//if err != nil {:
 	//	return nil, err
 	//}
 	
@@ -40,8 +40,13 @@ func NewService(cfg *Config, m *measurements.Measurements) (*HTTP, error) {
 		service: m,
 	}
 
+	device_handler := &DeviceHandler{
+		service: d,
+	}
+
 	baseHandler := &BaseHandler{
 		MeasurementHandler: measurement_handler,
+		DeviceHandler: device_handler,
 		IndexHandler: new(IndexHandler),
 	}
 
