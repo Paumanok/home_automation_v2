@@ -38,7 +38,7 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		//return jpeg of plot
 	case "next":
 		//get next measurement delay
-case "config":
+	case "config":
 		//configuration page
 	case "measurements":
 		//root of measurements queries
@@ -74,6 +74,17 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		return
 	case "GET":
 		//getting data from db
+		fmt.Println("in get")
+
+		meas, err := h.service.GetAllMeasurements(req.Context())
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+		json.NewEncoder(res).Encode(meas)
 	}
 }
 

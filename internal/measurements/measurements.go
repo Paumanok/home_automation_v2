@@ -13,7 +13,7 @@ type Measurement struct {
 	Humidity float32 `json:"humidity"`
 	Pressure float32 `json:"pressure,omitempty"`
 	PM25	float32  `json:"pm25,omitempty"`
-	CreatedAt *time.Time `json:"createdAt"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
 }
 
 
@@ -21,6 +21,7 @@ type Measurement struct {
 type store interface {
 	Create(ctx context.Context, m *Measurement) error
 	GetByMAC(ctx context.Context, mac string) ([]Measurement, error)
+	GetAllMeasurements(ctx context.Context) ([]Measurement, error)
 }
 
 type Measurements struct {
@@ -42,12 +43,37 @@ func (ms *Measurements) CreateMeasurement( ctx context.Context, m *Measurement) 
 		return nil,nil
 	}
 	
+	if m.CreatedAt == nil {
+		now := time.Now()
+		m.CreatedAt = &now
+	}
+
 	err := ms.store.Create(ctx, m)
 	if err != nil {
 		fmt.Println("db create failed")
 		return nil, err
 	}
 	return m, nil
+}
+
+func (ms *Measurements) GetMeasurementByMAC(ctx context.Context, MAC string) ([]Measurement, error){
+	fmt.Printf("Getting measurements for MAC: %s", MAC)
+	measurements, err := ms.store.GetByMAC(ctx, MAC)
+	if err != nil {
+		fmt.Println("failed to get measurements from db")
+	}
+
+	return measurements ,nil
+}
+
+func (ms *Measurements) GetAllMeasurements(ctx context.Context) ([]Measurement, error){
+	fmt.Println("Getting all measurements")
+	measurements, err := ms.store.GetAllMeasurements(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return measurements, nil
 }
 
 func NewService(s store) (*Measurements, error){

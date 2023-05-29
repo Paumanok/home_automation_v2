@@ -22,7 +22,7 @@ func (cfg *Configs) HTTP() (*http.Config, error) {
 func (cfg  *Configs) Database() (*database.Config, error) {
 	return &database.Config{
 		Host: 	"postgres",
-		Port:   "5424",
+		Port:   "5432",
 		Driver: "postgres",
 		
 		SSLMode: "",		

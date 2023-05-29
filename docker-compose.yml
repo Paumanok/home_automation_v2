@@ -2,8 +2,11 @@ version: '3'
 
 services:
   postgres:
-    image: "postgres:latest"
+    build:
+      context: .
+      dockerfile: ./pg.dockerfile
     restart: always
+    hostname: postgres
     environment:
       POSTGRES_PASSWORD: password 
       POSTGRES_USER: user
@@ -11,9 +14,10 @@ services:
     ports:
       - '5438:5432'
     volumes:
-      - ./data:/var/lib/postgresql/data
-      - ./schemas:/docker-entrypoint-initdb.d/devices.sql
-      - ./schemas:/docker-entrypoint-initdb.d/measurements.sql
+      - ./db/data:/var/lib/postgresql/data
+    
+    networks:
+      - local
 
   goapp:
     build:
@@ -21,6 +25,8 @@ services:
       dockerfile: ./dev.dockerfile
     ports:
       - 8080:8080
+    depends_on:
+      - postgres
     volumes:
       - ./:/app
 
