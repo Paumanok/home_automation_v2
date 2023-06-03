@@ -40,7 +40,7 @@ func (ds *deviceStore) Create(ctx context.Context, d *Device) error {
 	return nil
 }
 
-func (ds *deviceStore) GetdeviceByMac(ctx context.Context, mac string) (*Device, error){
+func (ds *deviceStore) GetDeviceByMac(ctx context.Context, mac string) (*Device, error){
 	query, args, err := ds.sq.Select(
 		"nickname",
 		"mac",
@@ -60,10 +60,6 @@ func (ds *deviceStore) GetdeviceByMac(ctx context.Context, mac string) (*Device,
 
 		row := ds.pdqdriver.QueryRow(ctx, query, args...)
 		
-		if err != nil {
-			return nil, err
-		}
-
 		var dev Device
 		
 		err = row.Scan(
@@ -73,6 +69,7 @@ func (ds *deviceStore) GetdeviceByMac(ctx context.Context, mac string) (*Device,
 			&dev.TemperatureComp,
 		)
 		if err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 		return &dev, nil
@@ -114,6 +111,6 @@ func NewStore(pdqdriver *pgxpool.Pool) (*deviceStore, error) {
 	return &deviceStore{
 		pdqdriver: pdqdriver,
 		sq: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
-		tableName: "Devices",
+		tableName: "devices",
 	}, nil
 }

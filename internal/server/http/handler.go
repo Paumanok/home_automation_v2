@@ -65,14 +65,38 @@ func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 			fmt.Println("json decode failed")
 			return
 		}
-		exists, err := h.DeviceHandler.service.GetDeviceExists(req.Context(), measurement.MAC)
+		exists, err := h.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
 		if err != nil {
 			fmt.Println("error checking for device existance")
 		}
 		
 		if exists {
 			fmt.Println("device exists!")
+		}else{
+			fmt.Println("device does not exist, adding")
+			var d = new(devices.Device)
+			d.MAC = measurement.MAC
+			d, err :=h.DeviceHandler.service.CreateDevice(req.Context(), d)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
 		}
+
+		exists2, err := h.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
+		if err != nil {
+			fmt.Println("error checking for device existance")
+		}
+		
+		if exists2 {
+			fmt.Println("device exists!")
+			h.MeasurementHandler.service.CreateMeasurement(req.Context(), measurement)
+		}else{
+			fmt.Println("why doesn't it exist")
+		}
+
+		return
 
 	case "GET":
 		//not sure if we need something here
@@ -84,9 +108,9 @@ type MeasurementHandler struct {
 }
 
 func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
-	var head string
-	head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
-	fmt.Println(head)
+	//var head string
+	//head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
+	//fmt.Println(head)
 	switch req.Method {
 	case "POST":
 		//getting data from esp

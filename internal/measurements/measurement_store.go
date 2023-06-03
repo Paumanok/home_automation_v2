@@ -16,8 +16,6 @@ type measurementStore struct {
 }
 
 func (ms *measurementStore) Create(ctx context.Context, m *Measurement) error {
-	fmt.Println("in da store, trying to create somethin")
-	fmt.Printf("what is the state of m? %+v\n", m)
 	query, args, err := ms.sq.Insert(ms.tableName).SetMap(map[string]interface{}{
 			"mac": m.MAC,
 			"temp": m.Temp,

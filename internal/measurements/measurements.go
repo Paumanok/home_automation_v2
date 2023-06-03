@@ -31,7 +31,6 @@ type Measurements struct {
 func (ms *Measurements) CreateMeasurement( ctx context.Context, m *Measurement) (*Measurement, error) {
 	
 	//dear future me, write some functions to make sure the data is good. 
-	fmt.Println("creating measurement from measurements.go")
 	if len(m.MAC) == 0 {
 		fmt.Println("invalid measurement, no MAC found")
 		//actually set up errors
