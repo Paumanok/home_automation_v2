@@ -22,6 +22,7 @@ type store interface {
 	Create(ctx context.Context, m *Measurement) error
 	GetByMAC(ctx context.Context, mac string) ([]Measurement, error)
 	GetAllMeasurements(ctx context.Context) ([]Measurement, error)
+	GetLastByMac(ctx context.Context, mac string) (*Measurement, error)
 }
 
 type Measurements struct {
@@ -46,7 +47,7 @@ func (ms *Measurements) CreateMeasurement( ctx context.Context, m *Measurement) 
 		now := time.Now()
 		m.CreatedAt = &now
 	}
-
+	fmt.Printf("Creating Measurement: %v+\n", m)
 	err := ms.store.Create(ctx, m)
 	if err != nil {
 		fmt.Println("db create failed")
@@ -73,6 +74,24 @@ func (ms *Measurements) GetAllMeasurements(ctx context.Context) ([]Measurement, 
 		return nil, err
 	}
 	return measurements, nil
+}
+
+func (ms *Measurements) GetLastMeasurements(ctx context.Context, macs []string, interval int) ([]Measurement, error) {
+	var last_measurements []Measurement
+
+	for _, mac := range macs {
+		meas, err := ms.store.GetLastByMac(ctx, mac)
+		if err != nil {
+			fmt.Println(err)
+			return nil, err 
+		}
+		now := time.Now()
+		cutoff := now.Add(time.Duration(-1*interval)*time.Second)
+		if meas.CreatedAt.After(cutoff) {
+			last_measurements = append(last_measurements, *meas)
+		}
+	}
+	return last_measurements, nil
 }
 
 func NewService(s store) (*Measurements, error){

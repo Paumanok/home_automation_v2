@@ -3,6 +3,7 @@ package helpers
 import (
 	"strings"
 	"path"
+	"time"
 )
 
 // ShiftPath splits off the first component of p, which will be cleaned of
@@ -15,5 +16,25 @@ func ShiftPath(p string) (head, tail string) {
 	if i <= 0 {
 		return p[1:], "/"
 	}
-	return p[1:1], p[i:]
+	return p[1:i], p[i:]
+}
+
+type SyncTimer struct {
+	TimerInterval int
+	TimerVal int
+}
+
+func (st *SyncTimer) GetNextDelay() int {
+	return st.TimerVal
+}
+
+func (st *SyncTimer) Timer() {
+	for {
+		for st.TimerVal != 0 {
+			st.TimerVal--
+			time.Sleep(1 * time.Second)
+		}
+		st.TimerVal = st.TimerInterval
+	}
+
 }

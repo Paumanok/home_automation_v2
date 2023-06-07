@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"net/http"
+	//"strings"
 	"encoding/json"
 	"html/template"
 	"datapaddock.lan/go_server/internal/utils/helpers"
@@ -18,6 +19,7 @@ type BaseHandler struct {
 	MeasurementHandler *MeasurementHandler
 	DeviceHandler *DeviceHandler
 	IndexHandler *IndexHandler
+	SyncTimer *helpers.SyncTimer
 }	
 						
 
@@ -29,7 +31,7 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	//here we're going to define our basic api endpoints
 	// i'm going to supply endpoints for the old server for now until I refactor
 	// the esp code
-	fmt.Println(head)
+
 	switch head {
 	case "":
 		fmt.Println("hit index case")
@@ -38,6 +40,7 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	case "images":
 		//return jpeg of plot
 	case "next":
+		h.ServeNext(res, req)	
 		//get next measurement delay
 	case "config":
 		//configuration page
@@ -54,6 +57,14 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (h *BaseHandler) ServeNext(res http.ResponseWriter, req *http.Request) {
+	if req.Method == "GET" {
+		st_resp := fmt.Sprint("sync_time ", h.SyncTimer.GetNextDelay())
+		res.Header().Set("Content-Type", "text/plain")
+		res.WriteHeader(http.StatusOK)
+		res.Write([]byte(st_resp))
+	}
+}
 
 func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 	
@@ -70,9 +81,7 @@ func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 			fmt.Println("error checking for device existance")
 		}
 		
-		if exists {
-			fmt.Println("device exists!")
-		}else{
+		if !exists {
 			fmt.Println("device does not exist, adding")
 			var d = new(devices.Device)
 			d.MAC = measurement.MAC
@@ -84,13 +93,12 @@ func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 
 		}
 
-		exists2, err := h.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
+		exists, err = h.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
 		if err != nil {
 			fmt.Println("error checking for device existance")
 		}
 		
-		if exists2 {
-			fmt.Println("device exists!")
+		if exists {
 			h.MeasurementHandler.service.CreateMeasurement(req.Context(), measurement)
 		}else{
 			fmt.Println("why doesn't it exist")
@@ -105,12 +113,14 @@ func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 
 type MeasurementHandler struct {
 	service *measurements.Measurements
+	base *BaseHandler
 }
 
 func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
 	//var head string
 	//head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
 	//fmt.Println(head)
+	dh := h.base.DeviceHandler
 	switch req.Method {
 	case "POST":
 		//getting data from esp
@@ -124,23 +134,47 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		h.service.CreateMeasurement(req.Context(), measurement)
 		return
 	case "GET":
+		var head string
+		head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
+		fmt.Println(head)
 		//getting data from db
 		fmt.Println("in get")
+		switch head {
+		case "":
+			meas, err := h.service.GetAllMeasurements(req.Context())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusOK)
+			json.NewEncoder(res).Encode(meas)
+		case "last":
+			fmt.Println("last hit")
+			var macs []string
+			devs,_ := dh.service.GetAllDevices(req.Context())
+			for _, dev := range devs {
+				macs = append(macs, dev.MAC)
+			}
+			interval := h.base.SyncTimer.TimerInterval
+			meas, err := h.service.GetLastMeasurements(req.Context(), macs, interval )
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusOK)
+			json.NewEncoder(res).Encode(meas)
 
-		meas, err := h.service.GetAllMeasurements(req.Context())
-		if err != nil {
-			fmt.Println(err)
-			return
+			
 		}
 		
-		res.Header().Set("Content-Type", "application/json")
-		res.WriteHeader(http.StatusOK)
-		json.NewEncoder(res).Encode(meas)
 	}
 }
 
 type DeviceHandler struct {
 	service *devices.Devices
+	base *BaseHandler
 }
 
 type IndexHandler struct {}
