@@ -20,3 +20,7 @@ I've been curious about Go for a while so I figured I'd take a more serious stab
 ## Future goals
 - Learn a frontend framework enough to make it pretty
 - golang Telegram bot integration for data retrieval and other tasks
+
+
+## Thanks
+- [bnkamalesh's goapp project structure](https://github.com/bnkamalesh/goapp) for giving me an excellent visual reference for structuring everything.
