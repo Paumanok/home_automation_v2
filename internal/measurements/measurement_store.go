@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 	//"github.com/jackc/pgx/v5"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -164,6 +165,48 @@ func (ms *measurementStore) GetLastByMac(ctx context.Context, mac string) (*Meas
 //getsince
 //select * from measurements where createdat >= '2023-06-05'; 
 //https://stackoverflow.com/questions/23335970/postgresql-query-between-date-ranges
+func (ms *measurementStore) GetSince(ctx context.Context, cutoff time.Time) ([]Measurement, error) {
+	query, args, err := ms.sq.Select(
+		"mac",
+		"temp",
+		"humidity",
+		"pressure",
+		"pm25",
+		"createdat",
+		).From(
+		ms.tableName,
+		).Where(
+		squirrel.GtOrEq{
+			"createdat" : cutoff,
+		},
+	).ToSql()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	rows, err := ms.pdqdriver.Query(ctx, query, args...)
+
+	var meas []Measurement
+
+	for rows.Next() {
+		var cur_meas Measurement
+		err :=rows.Scan(
+			&cur_meas.MAC,
+			&cur_meas.Temp,
+			&cur_meas.Humidity,
+			&cur_meas.Pressure,
+			&cur_meas.PM25,
+			&cur_meas.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		meas = append(meas, cur_meas)
+
+	}
+	return meas, nil
+}
+
 
 func NewStore(pdqdriver *pgxpool.Pool) (*measurementStore, error) {
 	return &measurementStore{

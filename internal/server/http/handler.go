@@ -27,7 +27,6 @@ type BaseHandler struct {
 func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	var head string
 	head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
-	fmt.Println("hit base handler")
 	//here we're going to define our basic api endpoints
 	// i'm going to supply endpoints for the old server for now until I refactor
 	// the esp code
@@ -165,9 +164,18 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 			res.Header().Set("Content-Type", "application/json")
 			res.WriteHeader(http.StatusOK)
 			json.NewEncoder(res).Encode(meas)
+		case "last_day":
+			meas, err := h.service.GetLastNumDays(req.Context(), 1)
 
-			
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusOK)
+			json.NewEncoder(res).Encode(meas)
 		}
+
 		
 	}
 }

@@ -23,6 +23,7 @@ type store interface {
 	GetByMAC(ctx context.Context, mac string) ([]Measurement, error)
 	GetAllMeasurements(ctx context.Context) ([]Measurement, error)
 	GetLastByMac(ctx context.Context, mac string) (*Measurement, error)
+	GetSince(ctx context.Context, cutoff time.Time) ([]Measurement, error)
 }
 
 type Measurements struct {
@@ -92,6 +93,24 @@ func (ms *Measurements) GetLastMeasurements(ctx context.Context, macs []string, 
 		}
 	}
 	return last_measurements, nil
+}
+
+func (ms *Measurements) GetLastNumDays(ctx context.Context, days int) ([]Measurement, error){
+	meas, err := ms.GetMeasurementsSince(ctx, time.Now().Add(time.Duration(-days)*time.Hour))
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return meas, nil
+}
+
+func (ms *Measurements) GetMeasurementsSince(ctx context.Context, cutoff time.Time) ([]Measurement, error) {
+	meas, err := ms.store.GetSince(ctx, cutoff)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return meas,nil	
 }
 
 func NewService(s store) (*Measurements, error){
