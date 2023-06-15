@@ -119,7 +119,8 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 	//var head string
 	//head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
 	//fmt.Println(head)
-	dh := h.base.DeviceHandler
+	//dh := h.base.DeviceHandler
+
 	switch req.Method {
 	case "POST":
 		//getting data from esp
@@ -133,6 +134,8 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		h.service.CreateMeasurement(req.Context(), measurement)
 		return
 	case "GET":
+		var meas  []measurements.Measurement
+		var err error
 		var head string
 		head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
 		fmt.Println(head)
@@ -140,43 +143,24 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		fmt.Println("in get")
 		switch head {
 		case "":
-			meas, err := h.service.GetAllMeasurements(req.Context())
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(http.StatusOK)
-			json.NewEncoder(res).Encode(meas)
+			meas, err = h.service.GetAllMeasurements(req.Context())
+		
 		case "last":
-			fmt.Println("last hit")
-			var macs []string
-			devs,_ := dh.service.GetAllDevices(req.Context())
-			for _, dev := range devs {
-				macs = append(macs, dev.MAC)
-			}
-			interval := h.base.SyncTimer.TimerInterval
-			meas, err := h.service.GetLastMeasurements(req.Context(), macs, interval )
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(http.StatusOK)
-			json.NewEncoder(res).Encode(meas)
-		case "last_day":
-			meas, err := h.service.GetLastNumDays(req.Context(), 1)
-
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			res.Header().Set("Content-Type", "application/json")
-			res.WriteHeader(http.StatusOK)
-			json.NewEncoder(res).Encode(meas)
+			meas, err = h.ServeLast(res, req)
 		}
 
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		
+		if meas == nil {
+			fmt.Println("No Measurements found")
+		}
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+		json.NewEncoder(res).Encode(meas)
+
 	}
 }
 

@@ -76,7 +76,9 @@ func (ms *Measurements) GetAllMeasurements(ctx context.Context) ([]Measurement, 
 	}
 	return measurements, nil
 }
-
+//This will only get the last measurement for a given device
+//interval will not get more measurements if it's set longer, its merely a filter for
+//how old a "last" measurement can be
 func (ms *Measurements) GetLastMeasurements(ctx context.Context, macs []string, interval int) ([]Measurement, error) {
 	var last_measurements []Measurement
 
@@ -88,6 +90,7 @@ func (ms *Measurements) GetLastMeasurements(ctx context.Context, macs []string, 
 		}
 		now := time.Now()
 		cutoff := now.Add(time.Duration(-1*interval)*time.Second)
+		fmt.Println(cutoff)
 		if meas.CreatedAt.After(cutoff) {
 			last_measurements = append(last_measurements, *meas)
 		}
