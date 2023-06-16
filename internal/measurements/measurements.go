@@ -24,6 +24,7 @@ type store interface {
 	GetAllMeasurements(ctx context.Context) ([]Measurement, error)
 	GetLastByMac(ctx context.Context, mac string) (*Measurement, error)
 	GetSince(ctx context.Context, cutoff time.Time) ([]Measurement, error)
+	GetPeriod(ctx context.Context, start time.Time, end time.Time) ([]Measurement, error)
 }
 
 type Measurements struct {
@@ -115,6 +116,16 @@ func (ms *Measurements) GetMeasurementsSince(ctx context.Context, cutoff time.Ti
 	}
 	return meas,nil	
 }
+
+func (ms *Measurements) GetMeasurementsFromPeriod(ctx context.Context, start time.Time, end time.Time) ([]Measurement, error) {
+	meas, err := ms.store.GetPeriod(ctx, start, end)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return meas, nil
+}
+
 
 func NewService(s store) (*Measurements, error){
 	return &Measurements{

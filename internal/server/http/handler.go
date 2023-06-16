@@ -116,10 +116,6 @@ type MeasurementHandler struct {
 }
 
 func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
-	//var head string
-	//head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
-	//fmt.Println(head)
-	//dh := h.base.DeviceHandler
 
 	switch req.Method {
 	case "POST":
@@ -133,6 +129,7 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		fmt.Println("handler creating measurement")
 		h.service.CreateMeasurement(req.Context(), measurement)
 		return
+
 	case "GET":
 		var meas  []measurements.Measurement
 		var err error
@@ -147,6 +144,9 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		
 		case "last":
 			meas, err = h.ServeLast(res, req)
+		
+		case "range":
+			meas, err = h.ServePeriod(res, req)
 		}
 
 		if err != nil {

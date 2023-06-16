@@ -207,6 +207,51 @@ func (ms *measurementStore) GetSince(ctx context.Context, cutoff time.Time) ([]M
 	return meas, nil
 }
 
+func (ms *measurementStore) GetPeriod(ctx context.Context, start time.Time, end time.Time) ([]Measurement, error){
+
+	query, args, err := ms.sq.Select(
+		"mac",
+		"temp",
+		"humidity",
+		"pressure",
+		"pm25",
+		"createdat",
+		).From(
+		ms.tableName,
+		).Where(
+		squirrel.GtOrEq{
+			"createdat" : start,
+		}).Where(
+		squirrel.LtOrEq{
+			"createdat" :end,
+			},
+	).ToSql()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	rows, err := ms.pdqdriver.Query(ctx, query, args...)
+
+	var meas []Measurement
+
+	for rows.Next() {
+		var cur_meas Measurement
+		err :=rows.Scan(
+			&cur_meas.MAC,
+			&cur_meas.Temp,
+			&cur_meas.Humidity,
+			&cur_meas.Pressure,
+			&cur_meas.PM25,
+			&cur_meas.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		meas = append(meas, cur_meas)
+
+	}
+	return meas, nil
+}
 
 func NewStore(pdqdriver *pgxpool.Pool) (*measurementStore, error) {
 	return &measurementStore{
