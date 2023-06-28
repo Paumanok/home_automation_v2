@@ -43,6 +43,8 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		//get next measurement delay
 	case "config":
 		//configuration page
+	case "devices":
+		h.DeviceHandler.ServeHTTP(res, req)
 	case "measurements":
 		//root of measurements queries
 		//subsequent ones will check for /measurements/last or /measurements/start:end
@@ -167,6 +169,31 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 type DeviceHandler struct {
 	service *devices.Devices
 	base *BaseHandler
+}
+
+func (h *DeviceHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
+	switch req.Method {
+	case "GET":
+		var devs []devices.Device
+		var err error
+		var head string
+		head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
+		
+		switch head {
+		case "":
+			devs, err = h.service.GetAllDevices(req.Context())
+
+		default:
+			//nothing here 	
+		}
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		res.Header().Set("Content-Type", "application/json")
+		res.WriteHeader(http.StatusOK)
+		json.NewEncoder(res).Encode(devs)
+	}	
 }
 
 type IndexHandler struct {}
