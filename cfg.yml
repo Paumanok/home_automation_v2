@@ -1,0 +1,20 @@
+
+http:
+  Host: 0.0.0.0
+  Port: 8080
+  ReadTimeout: 5s
+  Writetimeout: 5s
+
+database:
+  Host: "postgres"
+  Port: "5432"
+  Driver: "postgres"
+  SSLMode: ""
+  StoreName: "HomeAuto"
+  Username: "user"
+  Password: "password"
+  ConnPoolSize: 10
+  ReadTimeout: 5s
+  WriteTimeout: 5s
+  IdleTimeout: 60s
+  DialTimeout: 10s

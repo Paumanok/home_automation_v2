@@ -16,10 +16,10 @@ type HTTP struct {
 }
 
 type Config struct {
-	Host string
-	Port string
-	ReadTimeout time.Duration
-	WriteTimeout time.Duration
+	Host string `yaml:"Host"`
+	Port string `yaml:"Port"`
+	ReadTimeout time.Duration `yaml:"ReadTimeout"`
+	WriteTimeout time.Duration `yaml:"WriteTimeout"`
 }
 
 func (h *HTTP) Start() error {

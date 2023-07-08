@@ -12,11 +12,25 @@ import (
 
 func main() {
 	fmt.Println("Hello World")
+	var databaseCfg = new(database.Config)
+	var httpCfg = new(http.Config)
 	cfg, err := configs.New()
-
-	databaseCfg, err := cfg.Database()
 	if err != nil {
-		fmt.Println("db config creation failed")
+		//use hardcoded cfg
+
+		databaseCfg, err = cfg.Database()
+		if err != nil {
+			fmt.Println("db config creation failed")
+		}
+
+		httpCfg, err = cfg.HTTP()
+		if err != nil {
+			fmt.Println("config creation failed")
+			os.Exit(0)
+		}
+	} else {
+		httpCfg = cfg.HttpCfg
+		databaseCfg = cfg.DatabaseCfg
 	}
 
 	pool, err := database.NewService(databaseCfg)
@@ -44,11 +58,6 @@ func main() {
 		fmt.Println("measurementService failed")
 	}
 
-	httpCfg, err := cfg.HTTP()
-	if err != nil {
-		fmt.Println("config creation failed")
-		os.Exit(0)
-	}
 
 	http_server, err := http.NewService(httpCfg, measurementService, deviceService)
 	if err != nil {

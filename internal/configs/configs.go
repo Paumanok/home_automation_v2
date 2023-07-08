@@ -2,11 +2,16 @@ package configs
 
 import (
 	"time"
+	"io/ioutil"
+	"fmt"
 	"datapaddock.lan/go_server/internal/server/http"
 	"datapaddock.lan/go_server/internal/utils/database"
+	"gopkg.in/yaml.v3"
 )
 
 type Configs struct {
+	HttpCfg *http.Config `yaml:"http"`
+	DatabaseCfg *database.Config `yaml:"database"`
 }
 
 
@@ -17,6 +22,25 @@ func (cfg *Configs) HTTP() (*http.Config, error) {
 		ReadTimeout: 5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 	}, nil
+}
+
+func (cfg *Configs) ReadConfigFile() error {
+	yamlFile, err := ioutil.ReadFile("cfg.yml")
+	if err != nil {
+		return err
+	}
+
+	var config = new(Configs)
+
+	err = yaml.Unmarshal(yamlFile, &config)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	
+	cfg.HttpCfg = config.HttpCfg
+	cfg.DatabaseCfg = config.DatabaseCfg
+	return nil
 }
 
 func (cfg  *Configs) Database() (*database.Config, error) {
@@ -41,5 +65,10 @@ func (cfg  *Configs) Database() (*database.Config, error) {
 
 // New returns an instance of Config with all the required dependencies initialized
 func New() (*Configs, error) {
-	return &Configs{}, nil
+	var cf = new(Configs)
+	err := cf.ReadConfigFile()
+	if err != nil {
+		fmt.Println("read config failed")
+	}
+	return cf, nil	
 }

@@ -12,21 +12,21 @@ import (
 
 
 type Config struct {
-	Host string 	`json:"host,omitempty"`
-	Port string 	`json:"port,omitempty"`
-	Driver string 	`json:"driver,omitempty"`
+	Host string 	 `yaml:"Host"`
+	Port string 	 `yaml:"Port"`
+	Driver string 	 `yaml:"Driver"`
 
-	SSLMode string 	 `json:"sslmode,omitempty"`
+	SSLMode string 	 `yaml:"SSLMode"`
 	
-	StoreName string `json:"storename,omitempty"`
-	Username  string `json:"username,omitempty"`
-	Password  string `json:"password,omitempty"`
+	StoreName string `yaml:"StoreName"`
+	Username  string `yaml:"Username"`
+	Password  string `yaml:"Password"`
 
-	ConnPoolSize uint          `json:"connPoolSize,omitempty"`
-	ReadTimeout  time.Duration `json:"readTimeout,omitempty"`
-	WriteTimeout time.Duration `json:"writeTimeout,omitempty"`
-	IdleTimeout  time.Duration `json:"idleTimeout,omitempty"`
-	DialTimeout  time.Duration `json:"dialTimeout,omitempty"`
+	ConnPoolSize uint          `yaml:"ConnPoolSize"`
+	ReadTimeout  time.Duration `yaml:"ReadTimeout"`
+	WriteTimeout time.Duration `yaml:"WriteTimeout"`
+	IdleTimeout  time.Duration `yaml:"IdleTimeout"`
+	DialTimeout  time.Duration `yaml:"DialTimeout"`
 }
 
 
