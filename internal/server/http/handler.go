@@ -3,7 +3,7 @@ package http
 import (
 	"fmt"
 	"net/http"
-	//"strings"
+	"strings"
 	"encoding/json"
 	//"html/template"
 	"datapaddock.lan/go_server/internal/utils/helpers"
@@ -55,7 +55,10 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		//device data POST endpoint
 		h.ServeData(res, req)
 	default:
+		fmt.Println(req.URL.Path)
 		fmt.Println("hit default")
+		req.URL.Path = head + req.URL.Path
+		h.IndexHandler.ServeHTTP(res, req)
 	}
 }
 
@@ -80,7 +83,7 @@ func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 		}
 		exists, err := h.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
 		if err != nil {
-			fmt.Println("error checking for device existance")
+ 			fmt.Println("error checking for device existance")
 		}
 		
 		if !exists {
@@ -202,7 +205,15 @@ type IndexHandler struct {}
 func (h *IndexHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
 	fmt.Println("index called")
 	fa := frontend.GetFrontendAssets()
-	res.Header().Set("Content-Type", "text/html")
+	//naive mimetype stuff
+	if strings.HasSuffix(req.URL.Path, ".css"){
+		res.Header().Set("Content-Type","text/css")
+	} else if strings.HasSuffix(req.URL.Path, ".html") {
+		res.Header().Set("Content-Type", "text/html")
+	}else if strings.HasSuffix(req.URL.Path, ".js") {
+		res.Header().Set("Content-Type", "text/javascript")
+	}
+
 	http.FileServer(http.FS(fa)).ServeHTTP(res, req)
 	//template_path, err := filepath.Abs("internal/server/http/web/templates/")
 	//if err != nil {
