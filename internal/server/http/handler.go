@@ -5,11 +5,12 @@ import (
 	"net/http"
 	//"strings"
 	"encoding/json"
-	"html/template"
+	//"html/template"
 	"datapaddock.lan/go_server/internal/utils/helpers"
-	"path/filepath"
+	//"path/filepath"
 	"datapaddock.lan/go_server/internal/measurements"
 	"datapaddock.lan/go_server/internal/devices"
+	"datapaddock.lan/go_server/internal/server/frontend"
 
 )
 //empty structs take up no space but enable it
@@ -200,26 +201,28 @@ type IndexHandler struct {}
 
 func (h *IndexHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
 	fmt.Println("index called")
+	fa := frontend.GetFrontendAssets()
+	res.Header().Set("Content-Type", "text/html")
+	http.FileServer(http.FS(fa)).ServeHTTP(res, req)
+	//template_path, err := filepath.Abs("internal/server/http/web/templates/")
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	//index_path := template_path + "/" + "index.html"
+	//
+	//t := template.New(index_path)
 
-	template_path, err := filepath.Abs("internal/server/http/web/templates/")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	index_path := template_path + "/" + "index.html"
-	
-	t := template.New(index_path)
+	//t, err = t.ParseFiles(index_path)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
 
-	t, err = t.ParseFiles(index_path)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	//data := struct {
+	//	Name string
+	//}{"myname"}
 
-	data := struct {
-		Name string
-	}{"myname"}
-
-	t.ExecuteTemplate(res,"index.html", data)
+	//t.ExecuteTemplate(res,"index.html", data)
 	return 
 }

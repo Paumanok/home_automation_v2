@@ -12,4 +12,4 @@ RUN go get github.com/githubnemo/CompileDaemon
 RUN go install github.com/githubnemo/CompileDaemon
 RUN go version
 EXPOSE 8080
-ENTRYPOINT CompileDaemon -build="go build -o /build/app -buildvcs=false" -command="/build/app"
+ENTRYPOINT CompileDaemon -build="go build -tags dev -o /build/app -buildvcs=false" -command="/build/app"
