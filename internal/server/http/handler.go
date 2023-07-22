@@ -36,7 +36,22 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	case "":
 		fmt.Println("hit index case")
 		h.IndexHandler.ServeHTTP(res, req)
-		//index/homepage
+	
+	case "api":
+		h.ServeApi(res, req)
+	default:
+		fmt.Println(req.URL.Path)
+		fmt.Println("hit default")
+		req.URL.Path = head + req.URL.Path
+		h.IndexHandler.ServeHTTP(res, req)
+	}
+}
+
+func (h *BaseHandler) ServeApi(res http.ResponseWriter, req *http.Request) {
+	var head string
+	head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
+	switch head {
+
 	case "images":
 		//return jpeg of plot
 	case "next":
@@ -55,10 +70,7 @@ func (h *BaseHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		//device data POST endpoint
 		h.ServeData(res, req)
 	default:
-		fmt.Println(req.URL.Path)
-		fmt.Println("hit default")
-		req.URL.Path = head + req.URL.Path
-		h.IndexHandler.ServeHTTP(res, req)
+		fmt.Println("api default")
 	}
 }
 
@@ -141,9 +153,9 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		var err error
 		var head string
 		head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
-		fmt.Println(head)
 		//getting data from db
-		fmt.Println("in get")
+		fmt.Printf("MeasurementHandler:ServeHTTP---Head: %s\n", head )
+
 		switch head {
 		case "":
 			meas, err = h.service.GetAllMeasurements(req.Context())
