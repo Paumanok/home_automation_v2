@@ -40,6 +40,36 @@ func (ds *deviceStore) Create(ctx context.Context, d *Device) error {
 	return nil
 }
 
+func (ds *deviceStore) Update(ctx context.Context, d *Device, mac string) error {
+	query, args, err := ds.sq.Update(ds.tableName).SetMap(
+		map[string]interface{}{
+			"nickname": d.Nickname,
+			"mac": d.MAC, 
+			"humiditycomp": d.HumidityComp,
+			"temperaturecomp": d.TemperatureComp,
+	}).Where(
+		squirrel.Eq{
+			"mac" : mac, //i should worry about cap vs lowercase somewhere
+			},
+		).ToSql()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, err = ds.pdqdriver.Exec(ctx, query, args...)
+	if err != nil {
+		if strings.Contains(err.Error(), "violates unique constraint") {
+			fmt.Println("device_store: duplicate error")
+			return err
+		}
+		fmt.Println("device_store: internal error")
+		fmt.Println(err)
+		return err
+	}
+	return nil
+
+}
+
 func (ds *deviceStore) GetDeviceByMac(ctx context.Context, mac string) (*Device, error){
 	query, args, err := ds.sq.Select(
 		"nickname",

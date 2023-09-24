@@ -1,23 +1,37 @@
-<script setup>
+<script>
 import { RouterLink, RouterView } from 'vue-router'
+import { ref, onMounted } from 'vue';
 import HelloWorld from './components/HelloWorld.vue'
+import LineChart from './components/LineChart.vue' 
+//export default {
+//  name: 'App',
+//  components: { LinePlot}
+//}
+export default {
+  components: {
+    LineChart,
+  },
+  setup() {
+    const ApiEndpoint = '/api/measurements/last/hour';
+
+    return {
+      ApiEndpoint,
+
+    };
+  },
+};
+
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
+    <img alt="Home logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
   </header>
-
-  <RouterView />
+  <br><br>
+  <div>
+    <LineChart :apiEndpoint="ApiEndpoint" measurementType="temp" />
+    <LineChart :apiEndpoint="ApiEndpoint" measurementType="humidity" />
+  </div>
 </template>
 
 <style scoped>
@@ -35,7 +49,7 @@ nav {
   width: 100%;
   font-size: 12px;
   text-align: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 nav a.router-link-exact-active {

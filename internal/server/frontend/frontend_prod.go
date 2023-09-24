@@ -13,7 +13,7 @@ import (
 var embedFrontend embed.FS
 
 func GetFrontendAssets() fs.FS {
-	fmt.Println("wrong one, asshole")
+	fmt.Println("wrong one")
 	f, err := fs.Sub(embedFrontend, "homeauto_frontend/dist")
 	if err != nil {
 		panic(err)
