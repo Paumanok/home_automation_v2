@@ -149,7 +149,8 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 		return
 
 	case "GET":
-		var meas  []measurements.Measurement
+		//var meas  []measurements.Measurement
+		var meas any
 		var err error
 		var head string
 		head, req.URL.Path = helpers.ShiftPath(req.URL.Path)

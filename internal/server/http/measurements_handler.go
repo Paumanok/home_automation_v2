@@ -5,27 +5,36 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-	"datapaddock.lan/go_server/internal/utils/helpers"
+	//"datapaddock.lan/go_server/internal/utils/helpers"
 	"datapaddock.lan/go_server/internal/measurements"
-	//"datapaddock.lan/go_server/internal/devices"
+	"datapaddock.lan/go_server/internal/devices"
 )
 
 
-func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Request) ([]measurements.Measurement, error){
+func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Request) (any, error){
 	//dh := h.base.DeviceHandler
 	var meas []measurements.Measurement
 	var err error
 	var head string
+
+	fmt.Println(req.URL.RawQuery)
+	q , err := url.ParseQuery(req.URL.RawQuery)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	
 	if req.Method != "GET" {
 		return nil, nil
 	}
-
-	head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
-	
+	if !q.Has("period") {
+		return nil, nil
+	}
+	//head, req.URL.Path = helpers.ShiftPath(req.URL.Path)
+	head = q["period"][0]	
 	switch head {
 
-	case "":
+	case "last":
 		macs := h.GetMacs(req)
 		interval := h.base.SyncTimer.TimerInterval
 		meas, err = h.service.GetLastMeasurements(req.Context(), macs, interval )
@@ -45,14 +54,79 @@ func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Reques
 	case "month":
 		meas, err = h.service.GetLastNumDays(req.Context(), 30)
 	}
-
 	
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
+
+	if q.Has("comp") {
+		if q["comp"][0] == "true" {
+			meas = h.compensateMeasurements(req, meas)
+		}
+	}
+	if q.Has("byDevice") {
+		if q["byDevice"][0] == "true" {
+			fmt.Println("hit")
+			sortmeas, err := h.sortMeasurements(req, meas)
+			if err == nil {
+				return sortmeas, nil
+			}
+		}
+	}
+
 	return meas, nil
 
+}
+
+func (h *MeasurementHandler) compensateMeasurements(req *http.Request, meas []measurements.Measurement) ([]measurements.Measurement) {
+	var devs = make(map[string]devices.Device)
+	macs := h.GetMacs(req)
+
+	for _, mac := range macs {
+		dev, _ := h.base.DeviceHandler.service.GetDeviceByMac(req.Context(), mac)
+		devs[mac] = *dev
+
+	}
+
+	for idx, measurement := range meas {
+		measurement.Temp += float32(devs[measurement.MAC].TemperatureComp)
+		measurement.Humidity += float32(devs[measurement.MAC].HumidityComp)
+		meas[idx] = measurement
+	}
+
+	return meas
+}
+
+type SortedMeasurement struct {
+	DeviceInfo devices.Device `json:"deviceInfo"`
+	Measurements []measurements.Measurement `json:"measurements"`
+}
+
+func (h *MeasurementHandler) sortMeasurements(req *http.Request, meas []measurements.Measurement) (map[string]SortedMeasurement, error) {
+	var sorted = make(map[string]SortedMeasurement)
+	
+	for _, measurement := range meas {
+		mac := measurement.MAC
+		bucket, ok := sorted[mac]
+		if ok {
+			bucket.Measurements = append(bucket.Measurements, measurement)
+		} else {
+			var m []measurements.Measurement
+			m = append(m, measurement)
+			device_info, err := h.base.DeviceHandler.service.GetDeviceByMac(req.Context(), mac)
+			if err != nil {
+				return nil, err
+			}
+			sorted[mac] = SortedMeasurement {
+				DeviceInfo: *device_info, 
+				Measurements: m,
+			}
+		}
+		sorted[mac] = bucket
+	}
+
+	return sorted, nil
 }
 
 //this handles something looking like this http://192.168.0.151:8080/measurements/range?end=2023-06-16T01%3A04%3A46.814883%2B00%3A00&start=2023-06-15T01%3A04%3A46.814883%2B00%3A00

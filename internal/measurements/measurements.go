@@ -16,8 +16,6 @@ type Measurement struct {
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 }
 
-
-
 type store interface {
 	Create(ctx context.Context, m *Measurement) error
 	GetByMAC(ctx context.Context, mac string) ([]Measurement, error)
