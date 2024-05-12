@@ -3,7 +3,7 @@
 ## Putting this here so I don't forget how to use my own tool
 
 # /api
---- 
+
 ## ../measurements
 
 ### ../last
@@ -21,6 +21,7 @@
 - byDevice
     - Pre-sort measurements by device with added device metadata
     - default false
+
 example:
 ` api/measurements/last?period=hour&comp=true&byDevice=true `
 
@@ -39,8 +40,8 @@ example:
 
 ## ../devices
 
-### default -- api/devices
-    - retuns all registered devices in db
+### default (api/devices)
+- retuns all registered devices in db
 
 ### ../update
 
