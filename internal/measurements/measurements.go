@@ -78,22 +78,16 @@ func (ms *Measurements) GetAllMeasurements(ctx context.Context) ([]Measurement, 
 //This will only get the last measurement for a given device
 //interval will not get more measurements if it's set longer, its merely a filter for
 //how old a "last" measurement can be
+//UPDATE: not sure if this should remain, I broke this when i figured out the rest of the interval stuff,
+//and fixed it, but its mostly a wrapper around GetMeasurementsSince that can accept an interval setting from the
+//timer, similar to GetLastNumDays
 func (ms *Measurements) GetLastMeasurements(ctx context.Context, macs []string, interval int) ([]Measurement, error) {
 	var last_measurements []Measurement
 
-	for _, mac := range macs {
-		meas, err := ms.store.GetLastByMac(ctx, mac)
-		if err != nil {
-			fmt.Println(err)
-			return nil, err 
-		}
-		now := time.Now()
-		cutoff := now.Add(time.Duration(-1*interval)*time.Second)
-		fmt.Println(cutoff)
-		if meas.CreatedAt.After(cutoff) {
-			last_measurements = append(last_measurements, *meas)
-		}
-	}
+	now := time.Now()
+	cutoff := now.Add(time.Duration(-1*interval)*time.Second)
+	fmt.Println(cutoff)
+	last_measurements, _ = ms.GetMeasurementsSince(ctx, cutoff)
 	return last_measurements, nil
 }
 

@@ -17,6 +17,7 @@ type Device struct {
 
 type store interface {
 	Create(ctx context.Context, d *Device) error
+	Update(ctx context.Context, d *Device, mac string) error
 	GetDeviceByMac(ctx context.Context, mac string) (*Device, error)
 	GetDevices(ctx context.Context) ([]Device, error)
 }
@@ -40,6 +41,27 @@ func (ds *Devices) CreateDevice(ctx context.Context, d *Device) (*Device, error)
 		fmt.Println("db create device failed")
 		return nil, err
 	}
+	return d, nil
+}
+
+func (ds *Devices) UpdateDevice(ctx context.Context, d *Device) (*Device, error) {
+	fmt.Println("Updating device")
+
+	exists, err := ds.DeviceExists(ctx, d.MAC)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	if exists {
+		err = ds.store.Update(ctx, d, d.MAC)
+		if err != nil {
+			fmt.Println("db update device failed")
+			return nil, err
+		}
+	} else {
+		fmt.Println("cannot update device, does not exist")
+	}
+	
 	return d, nil
 }
 

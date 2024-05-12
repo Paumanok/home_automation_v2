@@ -10,14 +10,16 @@ import (
 	"datapaddock.lan/go_server/internal/devices"
 )
 
-
+// So I don't forget a second time,
+// I had converted ServeLast to use query paramters
+// ex: /api/measurements/last?period=day&byDevice=true gets the last day of measurements sorted by device
 func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Request) (any, error){
 	//dh := h.base.DeviceHandler
 	var meas []measurements.Measurement
 	var err error
 	var head string
 
-	fmt.Println(req.URL.RawQuery)
+	//fmt.Println(req.URL.RawQuery)
 	q , err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
 		fmt.Println(err)
@@ -37,7 +39,11 @@ func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Reques
 	case "last":
 		macs := h.GetMacs(req)
 		interval := h.base.SyncTimer.TimerInterval
+		fmt.Println(interval)
 		meas, err = h.service.GetLastMeasurements(req.Context(), macs, interval )
+		if err != nil {
+			fmt.Println(err)
+		}
 	
 	case "hour":
 		interval := 60*60
@@ -111,6 +117,7 @@ func (h *MeasurementHandler) sortMeasurements(req *http.Request, meas []measurem
 		bucket, ok := sorted[mac]
 		if ok {
 			bucket.Measurements = append(bucket.Measurements, measurement)
+			sorted[mac] = bucket
 		} else {
 			var m []measurements.Measurement
 			m = append(m, measurement)
@@ -123,7 +130,6 @@ func (h *MeasurementHandler) sortMeasurements(req *http.Request, meas []measurem
 				Measurements: m,
 			}
 		}
-		sorted[mac] = bucket
 	}
 
 	return sorted, nil

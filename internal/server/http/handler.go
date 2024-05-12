@@ -162,6 +162,7 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 			meas, err = h.service.GetAllMeasurements(req.Context())
 		
 		case "last":
+			fmt.Println("do we see this?")
 			meas, err = h.ServeLast(res, req)
 		
 		case "range":
@@ -199,7 +200,13 @@ func (h *DeviceHandler) ServeHTTP(res http.ResponseWriter, req *http.Request){
 		switch head {
 		case "":
 			devs, err = h.service.GetAllDevices(req.Context())
-
+		case "update":
+			dev, err := h.updateDevice(res, req)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				devs = append(devs, *dev)
+			}
 		default:
 			//nothing here 	
 		}

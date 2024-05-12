@@ -12,7 +12,8 @@ export default {
     LineChart,
   },
   setup() {
-    const ApiEndpoint = '/api/measurements/last/hour';
+    //const ApiEndpoint = '/api/measurements/last/hour?byDevice=true&comp=true';
+    const ApiEndpoint = '/api/measurements/last?period=hour&byDevice=true';
 
     return {
       ApiEndpoint,
@@ -29,6 +30,7 @@ export default {
   </header>
   <br><br>
   <div>
+    <p> what the heck </p>
     <LineChart :apiEndpoint="ApiEndpoint" measurementType="temp" />
     <LineChart :apiEndpoint="ApiEndpoint" measurementType="humidity" />
   </div>

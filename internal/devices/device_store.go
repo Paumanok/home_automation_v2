@@ -131,7 +131,7 @@ func (ds *deviceStore) GetDevices(ctx context.Context) ([]Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("%+v", cur_dev)
+		//fmt.Printf("%+v", cur_dev)
 		devs = append(devs, cur_dev)
 	}
 	return devs, nil

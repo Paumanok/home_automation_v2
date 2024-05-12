@@ -22,7 +22,7 @@ export default {
         const response = await fetch(props.apiEndpoint);
         const data = await response.json();
 
-        const labels = data.map((entry) => entry.MAC);
+        const labels = data.map((entry) => entry);
         const measurementData = data.map((entry) => entry[props.measurementType]);
 
         if (lineChart.value) {
