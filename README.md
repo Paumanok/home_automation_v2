@@ -1,6 +1,8 @@
 # Home_Automation_v2
 ### Here we go again
 
+[Basic API documentation](internal/server/readme.md)
+
 ## Purpose: 
 To recreate my first attempt at a home automation web app in a more performant and useful form. 
 
