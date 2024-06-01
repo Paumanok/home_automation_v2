@@ -76,13 +76,25 @@ func (h *BaseHandler) ServeApi(res http.ResponseWriter, req *http.Request) {
 
 func (h *BaseHandler) ServeNext(res http.ResponseWriter, req *http.Request) {
 	if req.Method == "GET" {
-		st_resp := fmt.Sprint("sync_time ", h.SyncTimer.GetNextDelay())
-		res.Header().Set("Content-Type", "text/plain")
-		res.WriteHeader(http.StatusOK)
-		res.Write([]byte(st_resp))
+		//fmt.Println(req.Header)
+		//fmt.Println("NEXT HIT")
+		if req.Header.Get("Accept") == "text/plain" {
+			st_resp := fmt.Sprint("sync_time ", h.SyncTimer.GetNextDelay())
+			res.Header().Set("Content-Type", "text/plain")
+			res.WriteHeader(http.StatusOK)
+			res.Write([]byte(st_resp))
+		} else if req.Header.Get("Accept") == "application/json" {
+			//doing this naevely because it's only a single key/value
+			st_resp := fmt.Sprint("{\"sync_time\":", h.SyncTimer.GetNextDelay(), "}")
+			res.Header().Set("Content-Type", "application/json")
+			res.WriteHeader(http.StatusOK)
+			res.Write([]byte(st_resp))
+		}
 	}
 }
 
+//backwards compatible device data handler, original design had devices hitting a /data endpoint to 
+//shove json into, but we've evolved.
 func (h *BaseHandler) ServeData(res http.ResponseWriter, req *http.Request){
 	
 	switch req.Method {
@@ -138,14 +150,8 @@ func (h *MeasurementHandler) ServeHTTP(res http.ResponseWriter, req *http.Reques
 	switch req.Method {
 	case "POST":
 		//getting data from esp
-		measurement := new(measurements.Measurement)
-		err := json.NewDecoder(req.Body).Decode(measurement)
-		if err != nil {
-			fmt.Println("json decode failed")
-			return
-		}
 		fmt.Println("handler creating measurement")
-		h.service.CreateMeasurement(req.Context(), measurement)
+		h.CollectDataFromDevice(res, req)
 		return
 
 	case "GET":

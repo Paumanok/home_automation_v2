@@ -5,10 +5,50 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"encoding/json"
 	//"datapaddock.lan/go_server/internal/utils/helpers"
 	"datapaddock.lan/go_server/internal/measurements"
 	"datapaddock.lan/go_server/internal/devices"
 )
+
+
+// Create new measurement, ensure device exists in db for said measurement, 
+// if it doesn't exist, add it
+func (h *MeasurementHandler) CollectDataFromDevice( res http.ResponseWriter, req *http.Request) {
+	measurement := new(measurements.Measurement)
+	err := json.NewDecoder(req.Body).Decode(measurement)
+	if err != nil  {
+		fmt.Println("json decode failed")
+		return
+	}
+	exists, err := h.base.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
+	if err != nil {
+		fmt.Println("error checking for device existance")
+	}
+	if !exists {
+		fmt.Println("device does not exist, adding")
+		var d = new(devices.Device)
+		d.MAC = measurement.MAC
+		d, err :=h.base.DeviceHandler.service.CreateDevice(req.Context(), d)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+	}
+
+	exists, err = h.base.DeviceHandler.service.DeviceExists(req.Context(), measurement.MAC)
+	if err != nil {
+		fmt.Println("error checking for device existance")
+	}
+	
+	if exists {
+		h.service.CreateMeasurement(req.Context(), measurement)
+	}else{
+		fmt.Println("why doesn't it exist")
+	}
+	return
+}
 
 // So I don't forget a second time,
 // I had converted ServeLast to use query paramters
