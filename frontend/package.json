@@ -12,7 +12,11 @@
   },
   "dependencies": {
     "pinia": "^2.1.7",
-    "vue": "^3.4.21"
+    "primeicons": "^7.0.0",
+    "primevue": "^3.52.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.2",
+    "vuetify": "^3.6.8"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",

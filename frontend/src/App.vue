@@ -2,20 +2,42 @@
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
 import NextCounter from './components/NextCounter.vue'
+import Homepage from './views/Homepage.vue'
+import Sidebar from 'primevue/sidebar';
+import Button from 'primevue/button';
+import { ref } from 'vue';
+
+const visible = ref(false);
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+    
+    <v-layout class="rounded rounded-md">
+      <v-app-bar color="black">
+        <v-img
+          class="mx-2"
+          src="src/assets/logo-house.svg"
+          max-height="40"
+          max-width="40"
+          contain
+        ></v-img>
+        <v-app-bar-title> Homeauto </v-app-bar-title>
+      </v-app-bar>
+      <v-navigation-drawer
+          expand-on-hover 
+          rail 
+          color="black"
+          mobile-breakpoint='xs'
+          >
+          <v-list density="compact" nav> 
+            <v-list-item prepend-icon="pi pi-chart-line" title="Environment" to="/environment"></v-list-item>
+            <v-list-item prepend-icon="pi pi-stopwatch" title="Pomodoro" to="/pomodoro"></v-list-item>
+            <v-list-item prepend-icon="pi pi-download" title="Deluge" href="http://deluge.datapaddock.lan"></v-list-item>
+          </v-list>
+      </v-navigation-drawer>
+    </v-layout>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <NextCounter />
-  </main>
+    <router-view />
 </template>
 
 <style scoped>
