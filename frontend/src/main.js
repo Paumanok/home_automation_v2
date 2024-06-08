@@ -17,6 +17,10 @@ import { aliases, mdi } from "vuetify/iconsets/mdi-svg"
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
+
+
+import Chart from 'chart.js/auto';
+import { Line } from 'vue-chartjs';
 //custom icons
 import logo from '@/customIcons/logo.vue'
 //const aliasesCustom = {
@@ -49,3 +53,4 @@ app.use(vuetify)
 app.mount('#app')
 
 app.component('sidebar', Sidebar)
+app.component('chart', Chart)
