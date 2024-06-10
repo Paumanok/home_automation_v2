@@ -1,29 +1,36 @@
 <template>
   <div>
-    <canvas ref="lineChart" width="800" height="400"></canvas>
+    <canvas ref="lineChart" width="400" height="400"></canvas>
   </div>
 </template>
 
-<script>
-import { ref, watch, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted, computed, watch } from 'vue';
 import Chart from 'chart.js/auto';
 import * as Measurements from '../services/measurements.js'
 import 'chartjs-adapter-luxon';
 
-export default {
-  props: {
-    apiEndpoint: String, // API endpoint to fetch data
-    update: Boolean,
-    measurementType: String, // 'temp' or 'humidity'
-  },
-  setup(props) {
-    const lineChart = ref(null);
-    const chartInstance = ref(null);
-    console.log(props.measurementType)
-    const fetchData = async () => {
+const model = defineModel()
+const props = defineProps(['measurementType'])
+const lineChart = ref(null);
+const chartInstance = ref(null);
+//ref({label: "na", data: [{ x: "2024-06-07T01:17:48.809027Z", y: 0}]})
+
+onMounted(async () => {
+  fetchData()
+})
+
+watch( model, async () => {
+  console.log("fetchinnnn in chart")
+  fetchData()
+})
+
+function fetchData() {
       try {
-        const measurements = await Measurements.get_measurements();
-        
+        //const measurements = await Measurements.get_measurements();
+        console.log("model:")
+        console.log(model.value.measurements)
+        const measurements = model.value.measurements
         const dataset = []
         
         for(const i in measurements) {
@@ -41,7 +48,6 @@ export default {
             }
           );
         }
-        console.log(dataset)
         if (lineChart.value) {
           const ctx = lineChart.value.getContext('2d');
 
@@ -84,27 +90,34 @@ export default {
       } catch (error) {
         console.error('Error fetching data:', error);
       }
-    };
+    
+}
 
-    // Fetch data when the component is mounted and re-fetch when the API endpoint changes
-    onMounted(() => {
-      fetchData();
-    });
+function construct_chart_data(measurements) {
+  //const data = await Measurements.get_measurements()
+  const outdata = []
+  
+  for(const i in measurements) {
+    const d = measurements[i];
+    const m = d["measurements"];
+    outdata.push(  {
+        label: d["deviceInfo"]["nickname"],
+        data: m.map( 
+          (m) => ({
+            x: m["createdAt"],
+            y: m["temp"],
+        })),
+      }
+    );
+  }
+  return outdata
+}
 
-    watch(() => props.update, () => {
-      fetchData();
-      console.log("fetched")
-      props.update.value = false;
-    });
 
-    return {
-      lineChart,
-    };
-  },
-};
 </script>
 
-<style scoped>
-/* Add any custom styles for your chart here */
+<style>
+#app {
+  min-width:100%;
+}
 </style>
-

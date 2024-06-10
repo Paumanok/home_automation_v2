@@ -24,20 +24,5 @@ function decrement() {
   }
 }
 
-//async function get_next() {
-//  
-//  const response = await fetch("/api/next", {
-//    method: "GET",
-//    headers: {
-//      "Content-Type": "application/json",
-//      "Accept": "application/json"
-//    },
-//  });
-//  
-//  const resp_json = await response.json()
-//  next.value = resp_json["sync_time"]
-//}
-
-
 
 </script>

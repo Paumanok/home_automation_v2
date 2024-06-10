@@ -49,8 +49,10 @@ header {
   display: block;
   margin: 0 auto 2rem;
 }
-
-@media (min-width: 1024px) {
+  #app {
+    min-width: 90%;
+  }
+@media (min-width: 100%) {
   header {
     display: flex;
     place-items: center;
