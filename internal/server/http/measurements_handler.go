@@ -105,7 +105,13 @@ func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Reques
 		fmt.Println(err)
 		return nil, err
 	}
+	if q.Has("fahrenheit") {
+		if q["fahrenheit"][0] == "true" {
+			fmt.Println("c2f")
+			meas = h.c2f(meas)
+		}
 
+	}
 	if q.Has("comp") {
 		if q["comp"][0] == "true" {
 			meas = h.compensateMeasurements(req, meas)
@@ -123,6 +129,14 @@ func (h *MeasurementHandler) ServeLast(res http.ResponseWriter, req *http.Reques
 
 	return meas, nil
 
+}
+
+func (h *MeasurementHandler) c2f(meas []measurements.Measurement) ([]measurements.Measurement) {
+	for idx, measurement := range meas {
+		measurement.Temp = (measurement.Temp * 9/5) + 32
+		meas[idx] = measurement
+	}
+	return meas
 }
 
 func (h *MeasurementHandler) compensateMeasurements(req *http.Request, meas []measurements.Measurement) ([]measurements.Measurement) {

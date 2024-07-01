@@ -27,7 +27,7 @@ export async function get_next(next) {
 
 
 export async function get_measurements() {
-  const response = await  fetch("/api/measurements/last?period=hour&byDevice=true&comp=true", {
+  const response = await  fetch("/api/measurements/last?period=hour&byDevice=true&comp=true&fahrenheit=true", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

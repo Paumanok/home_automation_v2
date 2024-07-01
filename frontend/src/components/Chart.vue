@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, shallowRef } from 'vue';
 import Chart from 'chart.js/auto';
 import * as Measurements from '../services/measurements.js'
 import 'chartjs-adapter-luxon';
@@ -13,25 +13,31 @@ import 'chartjs-adapter-luxon';
 const model = defineModel()
 const props = defineProps(['measurementType'])
 const lineChart = ref(null);
-const chartInstance = ref(null);
-//ref({label: "na", data: [{ x: "2024-06-07T01:17:48.809027Z", y: 0}]})
+const lcContext = ref(null);
+//important! 
+//https://stackoverflow.com/questions/77700265/chart-js-with-vue3-update-fails-gives-infinite-recursion-errors
+const chartInstance = shallowRef(null);
 
 onMounted(async () => {
-  fetchData()
+  lcContext.value = lineChart.value.getContext("2d")
+  createChart()
 })
 
-watch( model, async () => {
-  console.log("fetchinnnn in chart")
-  fetchData()
+watch( model, async (old) => {
+  try {
+    if (chartInstance.value != null){
+      updateChart()
+      }
+  } catch (error) {
+    console.log(error)
+  }
 })
 
-function fetchData() {
-      try {
-        //const measurements = await Measurements.get_measurements();
-        console.log("model:")
-        console.log(model.value.measurements)
+function collectData() {
+      const dataset = []
+      if( model.value != null) {
+
         const measurements = model.value.measurements
-        const dataset = []
         
         for(const i in measurements) {
           const d = measurements[i];
@@ -48,69 +54,57 @@ function fetchData() {
             }
           );
         }
-        if (lineChart.value) {
-          const ctx = lineChart.value.getContext('2d');
-
-          if (chartInstance.value) {
-            chartInstance.value.destroy(); // Destroy the existing chart instance
-          }
-
-          chartInstance.value = new Chart(ctx, {
-            type: 'line',
-            data: {
-              datasets: dataset
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              pointRadius: 0,
-              scales: {
-                  x: {
-                  type: 'time',
-                  time: {
-                    tooltipFormat: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for the tooltip
-                    displayFormats: {
-                      millisecond: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for milliseconds
-                      second: 'LLL dd h:mm', // Format for seconds
-                      minute: 'LLL dd h:mm', // Format for minutes
-                      hour: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for hours
-                      day: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for days
-                      week: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for weeks
-                      month: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for months
-                      quarter: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for quarters
-                      year: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for years
-                    },
-                    unit: 'minute',
-                  },
-                }
-              }
-            },
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
       }
-    
+      return dataset
 }
 
-function construct_chart_data(measurements) {
-  //const data = await Measurements.get_measurements()
-  const outdata = []
-  
-  for(const i in measurements) {
-    const d = measurements[i];
-    const m = d["measurements"];
-    outdata.push(  {
-        label: d["deviceInfo"]["nickname"],
-        data: m.map( 
-          (m) => ({
-            x: m["createdAt"],
-            y: m["temp"],
-        })),
-      }
-    );
+
+function updateChart() {
+    const dataset = collectData()
+    setTimeout(() => 0, 100) //this sleep is needed to avoid glitchy charts, not extremely interested in discovering why.
+    chartInstance.value.data.datasets = dataset
+
+    chartInstance.value.update()
+}
+
+function createChart() {
+    try {
+    const dataset = collectData()
+    chartInstance.value = new Chart(lcContext.value, {
+      type: 'line',
+      data: {
+        datasets: dataset
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        pointRadius: 0,
+        scales: {
+            x: {
+            type: 'time',
+            time: {
+              tooltipFormat: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for the tooltip
+              displayFormats: {
+                millisecond: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for milliseconds
+                second: 'LLL dd h:mm', // Format for seconds
+                minute: 'LLL dd h:mm', // Format for minutes
+                hour: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for hours
+                day: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for days
+                week: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for weeks
+                month: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for months
+                quarter: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for quarters
+                year: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Format for years
+              },
+              unit: 'minute',
+            },
+          }
+        }
+      },
+    });
+  } catch (error) {
+      console.error('Error fetching data:', error);
   }
-  return outdata
+
 }
 
 
