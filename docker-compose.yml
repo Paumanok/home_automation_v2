@@ -23,6 +23,7 @@ services:
     build:
       context: .
       dockerfile: ./dev.dockerfile
+    restart: always
     ports:
       - 8080:8080
     depends_on:
@@ -36,8 +37,9 @@ services:
   frontend:
     build:
       context: ./frontend/
+    restart: always
     ports:
-      - 5000:5000 
+      - 5001:5000 
     volumes: 
       - ./frontend/src/:/usr/app/src
     networks:
@@ -47,11 +49,12 @@ services:
     build:
       context: ./nginx
       dockerfile: ./Dockerfile
+    restart: always
     depends_on:
       - goapp
       - frontend
     ports:
-      - 80:8000
+      - 8000:8000
     volumes:
       - ./nginx:/etc/nginx
       #network_mode: host

@@ -13,14 +13,20 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+
   server: {
+    host: true,
     port: 5000,
-    watch: {usePolling: false},
-    strictPort: true,
-    hmr: {
-            //host: "frontend",
-            //protocol: "ws",
-            port: 5000,
-        },
-  },
+    strictPort: true
+  }
+  //server: {
+  //  port: 5000,
+  //  watch: {usePolling: false},
+  //  strictPort: true,
+  //  hmr: {
+  //          host: "frontend",
+  //          protocol: "ws",
+  //          port: 80,
+  //      },
+  //},
 })

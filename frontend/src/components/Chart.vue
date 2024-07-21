@@ -23,21 +23,21 @@ onMounted(async () => {
   createChart()
 })
 
-watch( model, async (old) => {
+watch( model, async (newValue) => {
   try {
     if (chartInstance.value != null){
-      updateChart()
+      updateChart(newValue)
       }
   } catch (error) {
     console.log(error)
   }
 })
 
-function collectData() {
+function collectData(newModel) {
       const dataset = []
       if( model.value != null) {
 
-        const measurements = model.value.measurements
+        const measurements = newModel.measurements
         
         for(const i in measurements) {
           const d = measurements[i];
@@ -59,8 +59,8 @@ function collectData() {
 }
 
 
-function updateChart() {
-    const dataset = collectData()
+function updateChart(newModel) {
+    const dataset = collectData(newModel)
     setTimeout(() => 0, 100) //this sleep is needed to avoid glitchy charts, not extremely interested in discovering why.
     chartInstance.value.data.datasets = dataset
 
