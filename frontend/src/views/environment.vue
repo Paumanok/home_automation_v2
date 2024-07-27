@@ -49,8 +49,9 @@ const update = ref(true);
 const measModel = ref(null);
 const next = ref(0);
 
+
 onMounted(async () => {
-  Measurements.get_next(next)
+  await Measurements.get_next(next)
   measModel.value = {"measurements": await Measurements.get_measurements()}
 })
 
@@ -66,10 +67,10 @@ setInterval(decrement, 1000)
 
 function decrement() {
   next.value--
-  if(next.value <= 0) {
+  if(next.value <= 0 ) {
     console.log("getting next")
-    Measurements.get_next(next)
     update.value=true
+    Measurements.get_next(next)
   }
 }
 

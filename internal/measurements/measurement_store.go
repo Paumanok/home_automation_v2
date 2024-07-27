@@ -49,7 +49,7 @@ func (ms *measurementStore) GetAllMeasurements(ctx context.Context) ([]Measureme
 		"pressure",
 		"pm25",
 		"createdat",
-		).From(ms.tableName).ToSql()
+		).From(ms.tableName).OrderBy("createdat desc").ToSql()
 
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (ms *measurementStore) GetByMAC(ctx context.Context, mac string) ([]Measure
 		squirrel.Eq{
 			"mac":mac,
 		},
-	).ToSql()
+	).OrderBy("createdat desc").ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (ms *measurementStore) GetSince(ctx context.Context, cutoff time.Time) ([]M
 		squirrel.GtOrEq{
 			"createdat" : cutoff,
 		},
-	).ToSql()
+	).OrderBy("createdat desc").ToSql()
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -225,7 +225,7 @@ func (ms *measurementStore) GetPeriod(ctx context.Context, start time.Time, end 
 		squirrel.LtOrEq{
 			"createdat" :end,
 			},
-	).ToSql()
+	).OrderBy("createdat desc").ToSql()
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

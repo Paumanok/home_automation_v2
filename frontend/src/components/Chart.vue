@@ -18,7 +18,7 @@ const lcContext = ref(null);
 //https://stackoverflow.com/questions/77700265/chart-js-with-vue3-update-fails-gives-infinite-recursion-errors
 const chartInstance = shallowRef(null);
 
-onMounted(async () => {
+onMounted( async () => {
   lcContext.value = lineChart.value.getContext("2d")
   createChart()
 })
