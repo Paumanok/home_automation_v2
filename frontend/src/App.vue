@@ -5,9 +5,14 @@ import NextCounter from './components/NextCounter.vue'
 import Homepage from './views/Homepage.vue'
 import Sidebar from 'primevue/sidebar';
 import Button from 'primevue/button';
+import * as Kasa from './services/kasa.js';
 import { ref } from 'vue';
 
 const visible = ref(false);
+function handleClick() {
+  Kasa.toggle_lamp();
+
+}
 </script>
 
 <template>
@@ -22,6 +27,10 @@ const visible = ref(false);
           contain
         ></v-img>
         <v-app-bar-title> Homeauto </v-app-bar-title>
+        <v-spacer></v-spacer>
+        <v-btn color="primary" @click="handleClick">
+         Lamp 
+      </v-btn>
       </v-app-bar>
       <v-navigation-drawer
           expand-on-hover 

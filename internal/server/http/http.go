@@ -26,6 +26,25 @@ func (h *HTTP) Start() error {
 	return h.server.ListenAndServe()
 }
 
+// CORS middleware
+func withCORS(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        // Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://kasa.datapaddock.lan") // Allow all origins, adjust for security as needed
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	fmt.Println("with cors?")
+        // Handle preflight requests
+        if r.Method == http.MethodOptions {
+            w.WriteHeader(http.StatusOK)
+	    fmt.Println("method okay")
+            return
+        }
+
+        // Call the next handler
+        next.ServeHTTP(w, r)
+    })
+}
 
 
 func NewService(cfg *Config, m *measurements.Measurements, d *devices.Devices) (*HTTP, error) {
@@ -60,13 +79,15 @@ func NewService(cfg *Config, m *measurements.Measurements, d *devices.Devices) (
 	}
 
 	measurement_handler.base = baseHandler
-	device_handler.base = baseHandler
+	device_handler.base = baseHandler	
+
+	handler := withCORS(baseHandler)
 
 	go sync_timer.Timer()
 
 	httpServer := &http.Server{
 		Addr:		fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-		Handler:	baseHandler, 
+		Handler:	handler, 
 		ReadTimeout: cfg.ReadTimeout, 
 		WriteTimeout: cfg.WriteTimeout,
 	}
