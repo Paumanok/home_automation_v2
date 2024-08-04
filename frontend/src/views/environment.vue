@@ -44,10 +44,10 @@ import Chart from '../components/Chart.vue';
 //import Chart2 from '../components/chart2.vue';
 
 
-const update = ref(true);
+const update = ref(false);
 
 const measModel = ref(null);
-const next = ref(0);
+const next = ref(1);
 
 
 onMounted(async () => {
@@ -70,7 +70,9 @@ function decrement() {
   if(next.value <= 0 ) {
     console.log("getting next")
     update.value=true
-    Measurements.get_next(next)
+    Measurements.get_next(next).then( () => {
+      console.log(next.value)
+      })
   }
 }
 
